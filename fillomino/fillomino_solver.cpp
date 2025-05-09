@@ -1,5 +1,6 @@
 #include "fillomino_solver.hpp"
 #include <cstring>
+#include <vector>
 
 Grid::Grid(int h, int w) : height(h), width(w) {
     board = new Node*[height];
@@ -36,7 +37,7 @@ bool Grid::check_indices(int x, int y) const {
     return x >= 0 && x < height && y >= 0 && y < width;
 }
 
-int Grid::get_size(int x, int y, int value, bool visited[10][10], bool allow_zero) const {
+int Grid::get_size(int x, int y, int value, std::vector<std::vector<bool>>& visited, bool allow_zero) const {
     visited[x][y] = true;
     int size = 1;
 
@@ -53,8 +54,7 @@ int Grid::get_size(int x, int y, int value, bool visited[10][10], bool allow_zer
 }
 
 bool Grid::all_ok() const {
-    bool visited[10][10];
-    std::memset(visited, 0, sizeof(visited));
+    std::vector<std::vector<bool>> visited(height, std::vector<bool>(width, false));
     for (int i = 0; i < height; ++i)
         for (int j = 0; j < width; ++j)
             if (!visited[i][j]) {
@@ -66,30 +66,129 @@ bool Grid::all_ok() const {
     return true;
 }
 
+std::pair<int, int> Grid::select_next_cell(const std::vector<std::vector<bool>>& visited) {
+    int best_score = -1;
+    std::pair<int, int> best_cell = {-1, -1};
+
+    for (int i = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j) {
+            if (visited[i][j]) continue;
+
+            int mrv_score = 0, degree_score = 0;
+
+            if (use_mrv && board[i][j].value == 0) {
+                for (int v = 1; v <= 9; ++v) {
+                    std::vector<std::vector<bool>> temp_visited(height, std::vector<bool>(width, false));
+                    int comp_size = get_size(i, j, v, temp_visited, false);
+                    if (comp_size <= v) {
+                        mrv_score++;
+                    }
+                }
+                mrv_score = 9 - mrv_score;
+            }
+
+            if (use_degree) {
+                for (int d = 0; d < 4; ++d) {
+                    int ni = i + dx[d], nj = j + dy[d];
+                    if (check_indices(ni, nj) && board[ni][nj].value == 0)
+                        degree_score++;
+                }
+            }
+
+            int total_score = mrv_score + degree_score * 10;
+            if (total_score > best_score) {
+                best_score = total_score;
+                best_cell = {i, j};
+            }
+        }
+    }
+
+    return best_cell;
+}
+
+bool Grid::solve_heuristic(int i, int j, std::vector<std::vector<bool>>& visited, int visited_count) {
+    if (node_counter++ > 500000) {
+        std::cout << "Exceeded node limit\n";
+        return false;
+    }
+
+    if (i == -1 || j == -1) return false;
+    if (visited_count > height * width) return false;
+
+    visited[i][j] = true;
+    visited_count++;
+
+    if (board[i][j].value != 0) {
+        if (visited_count == height * width) {
+            visited[i][j] = false;
+            return all_ok();
+        }
+
+        auto [ni, nj] = select_next_cell(visited);
+        bool res = solve_heuristic(ni, nj, visited, visited_count);
+        visited[i][j] = false;
+        return res;
+    }
+
+    for (int v : {2, 3, 4, 13}) { 
+        board[i][j].value = v;
+        std::cout << "[Heuristic] Trying value " << v << " at (" << i << "," << j << ")\n";
+
+        std::vector<std::vector<bool>> temp_visited(height, std::vector<bool>(width, false));
+        int comp_size = get_size(i, j, v, temp_visited, false);
+        if (comp_size > v) {
+            board[i][j].value = board[i][j].init_value;
+            continue;
+        }
+
+        temp_visited.assign(height, std::vector<bool>(width, false));
+        if (comp_size != v && get_size(i, j, v, temp_visited, true) < v) {
+            board[i][j].value = board[i][j].init_value;
+            continue;
+        }
+
+        auto [ni, nj] = select_next_cell(visited);
+        if (ni != -1 && solve_heuristic(ni, nj, visited, visited_count))
+            return true;
+
+        board[i][j].value = board[i][j].init_value;
+    }
+
+    visited[i][j] = false;
+    std::cout << "[Backtrack] Returning from (" << i << "," << j << ")\n";
+    return false;
+}
+
+
+
+
 bool Grid::solve(int i, int j) {
-    if (node_counter++ > 1000000) return false;
+    node_counter++;
     if (i == height) return all_ok();
     if (j == width) return solve(i + 1, 0);
     if (board[i][j].value != 0)
         return solve(i, j + 1);
 
-    for (int v = 1; v <= 9; ++v) {
+    for (int v = 1; v <= 13; ++v) {
         board[i][j].value = v;
-        bool visited[10][10] = {};
+
+        std::cout << "Trying value " << v << " at (" << i << "," << j << ")\n";
+
+        std::vector<std::vector<bool>> visited(height, std::vector<bool>(width, false));
         int comp_size = get_size(i, j, v, visited, false);
         if (comp_size > v) {
             board[i][j].value = 0;
             continue;
         }
-        if (comp_size != v) {
-            std::memset(visited, 0, sizeof(visited));
-            if (get_size(i, j, v, visited, true) < v) {
-                board[i][j].value = 0;
-                continue;
-            }
+        visited.assign(height, std::vector<bool>(width, false));
+        if (comp_size != v && get_size(i, j, v, visited, true) < v) {
+            board[i][j].value = 0;
+            continue;
         }
+
         if (solve(i, j + 1)) return true;
         board[i][j].value = 0;
     }
+
     return false;
 }

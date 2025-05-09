@@ -10,6 +10,12 @@ public:
     Grid(int height, int width);
     ~Grid();
 
+    bool use_mrv = false;
+    bool use_degree = false;
+
+    std::pair<int, int> select_next_cell(const std::vector<std::vector<bool>>& visited);
+    bool solve_heuristic(int i, int j, std::vector<std::vector<bool>>& visited, int visited_count);
+
     void read(std::istream& in);
     void print(std::ostream& out) const;
     bool solve(int i, int j);
@@ -22,7 +28,7 @@ private:
     const int dy[4] = { 0, 0, -1, 1 };
 
     bool check_indices(int x, int y) const;
-    int get_size(int x, int y, int value, bool visited[10][10], bool allow_zero) const;
+    int get_size(int x, int y, int value, std::vector<std::vector<bool>>& visited, bool allow_zero) const;
     bool all_ok() const;
 };
 
