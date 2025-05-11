@@ -158,37 +158,3 @@ bool Grid::solve_heuristic(int i, int j, std::vector<std::vector<bool>>& visited
     std::cout << "[Backtrack] Returning from (" << i << "," << j << ")\n";
     return false;
 }
-
-
-
-
-bool Grid::solve(int i, int j) {
-    node_counter++;
-    if (i == height) return all_ok();
-    if (j == width) return solve(i + 1, 0);
-    if (board[i][j].value != 0)
-        return solve(i, j + 1);
-
-    for (int v = 1; v <= 13; ++v) {
-        board[i][j].value = v;
-
-        std::cout << "Trying value " << v << " at (" << i << "," << j << ")\n";
-
-        std::vector<std::vector<bool>> visited(height, std::vector<bool>(width, false));
-        int comp_size = get_size(i, j, v, visited, false);
-        if (comp_size > v) {
-            board[i][j].value = 0;
-            continue;
-        }
-        visited.assign(height, std::vector<bool>(width, false));
-        if (comp_size != v && get_size(i, j, v, visited, true) < v) {
-            board[i][j].value = 0;
-            continue;
-        }
-
-        if (solve(i, j + 1)) return true;
-        board[i][j].value = 0;
-    }
-
-    return false;
-}

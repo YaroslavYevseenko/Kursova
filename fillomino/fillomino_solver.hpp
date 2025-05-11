@@ -18,7 +18,6 @@ public:
 
     void read(std::istream& in);
     void print(std::ostream& out) const;
-    bool solve(int i, int j);
 
 private:
     int height, width;

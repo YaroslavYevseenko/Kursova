@@ -18,35 +18,22 @@ int main() {
         std::cout << "Тест " << test++ << ":\n";
         game.print(std::cout);
 
-        std::cout << "Оберіть алгоритм:\n";
-        std::cout << "1 - Простий backtracking\n";
-        std::cout << "6 - Евристичний (MRV + Degree)\n";
-        std::cout << "> ";
-
-        int choice;
-        std::cin >> choice;
+        std::cout << "Запуск евристичного алгоритму (MRV + Degree)...\n";
 
         bool result = false;
         auto start = std::chrono::steady_clock::now();
 
-        if (choice == 1) {
-            result = game.solve(0, 0);
-        } else if (choice == 6) {
-            game.use_mrv = true;
-            game.use_degree = true;
+        game.use_mrv = true;
+        game.use_degree = true;
 
-            std::vector<std::vector<bool>> visited(n, std::vector<bool>(m, false));
-            auto [x, y] = game.select_next_cell(visited);
+        std::vector<std::vector<bool>> visited(n, std::vector<bool>(m, false));
+        auto [x, y] = game.select_next_cell(visited);
 
-            if (x == -1 || y == -1) {
-                std::cout << "Немає доступної клітинки для старту!\n";
-                result = false;
-            } else {
-                result = game.solve_heuristic(x, y, visited, 0);
-            }
+        if (x == -1 || y == -1) {
+            std::cout << "Немає доступної клітинки для старту!\n";
+            result = false;
         } else {
-            std::cout << "Невідома опція!" << std::endl;
-            return 1;
+            result = game.solve_heuristic(x, y, visited, 0);
         }
 
         auto end = std::chrono::steady_clock::now();
