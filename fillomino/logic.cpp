@@ -1,7 +1,16 @@
-#include "fillomino_solver.hpp"
+/* -------------------------------------------------------------------------- */
+/*  File:       logic.cpp                                                    */
+/*  Purpose:    Core logic implementation for the Fillomino puzzle solver.   */
+/* -------------------------------------------------------------------------- */
+
+#include "logic.hpp"
 #include <cstring>
 #include <vector>
 
+/* -------------------------------------------------------------------------- */
+/*  Constructor: Grid                                                         */
+/*  Purpose:     Initializes a grid with given height and width              */
+/* -------------------------------------------------------------------------- */
 Grid::Grid(int h, int w) : height(h), width(w) {
     board = new Node*[height];
     for (int i = 0; i < height; ++i) {
@@ -9,6 +18,10 @@ Grid::Grid(int h, int w) : height(h), width(w) {
     }
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Destructor: ~Grid                                                         */
+/*  Purpose:     Cleans up dynamically allocated memory                       */
+/* -------------------------------------------------------------------------- */
 Grid::~Grid() {
     for (int i = 0; i < height; ++i) {
         delete[] board[i];
@@ -16,6 +29,10 @@ Grid::~Grid() {
     delete[] board;
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Method:     read                                                          */
+/*  Purpose:    Reads the grid from an input stream                          */
+/* -------------------------------------------------------------------------- */
 void Grid::read(std::istream& in) {
     for (int i = 0; i < height; ++i)
         for (int j = 0; j < width; ++j) {
@@ -25,6 +42,10 @@ void Grid::read(std::istream& in) {
         }
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Method:     print                                                         */
+/*  Purpose:    Prints the current grid to an output stream                  */
+/* -------------------------------------------------------------------------- */
 void Grid::print(std::ostream& out) const {
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j)
@@ -33,10 +54,18 @@ void Grid::print(std::ostream& out) const {
     }
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Method:     check_indices                                                 */
+/*  Purpose:    Validates cell coordinates                                   */
+/* -------------------------------------------------------------------------- */
 bool Grid::check_indices(int x, int y) const {
     return x >= 0 && x < height && y >= 0 && y < width;
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Method:     get_size                                                      */
+/*  Purpose:    Computes size of the connected region for a given value      */
+/* -------------------------------------------------------------------------- */
 int Grid::get_size(int x, int y, int value, std::vector<std::vector<bool>>& visited, bool allow_zero) const {
     visited[x][y] = true;
     int size = 1;
@@ -53,6 +82,10 @@ int Grid::get_size(int x, int y, int value, std::vector<std::vector<bool>>& visi
     return size;
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Method:     all_ok                                                        */
+/*  Purpose:    Checks if the entire grid is a valid Fillomino solution      */
+/* -------------------------------------------------------------------------- */
 bool Grid::all_ok() const {
     std::vector<std::vector<bool>> visited(height, std::vector<bool>(width, false));
     for (int i = 0; i < height; ++i)
@@ -66,6 +99,10 @@ bool Grid::all_ok() const {
     return true;
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Method:     select_next_cell                                              */
+/*  Purpose:    Selects the next most promising cell using MRV and Degree    */
+/* -------------------------------------------------------------------------- */
 std::pair<int, int> Grid::select_next_cell(const std::vector<std::vector<bool>>& visited) {
     int best_score = -1;
     std::pair<int, int> best_cell = {-1, -1};
@@ -106,6 +143,10 @@ std::pair<int, int> Grid::select_next_cell(const std::vector<std::vector<bool>>&
     return best_cell;
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Method:     solve_heuristic                                               */
+/*  Purpose:    Solves the puzzle using heuristic search      */
+/* -------------------------------------------------------------------------- */
 bool Grid::solve_heuristic(int i, int j, std::vector<std::vector<bool>>& visited, int visited_count) {
     if (node_counter++ > 500000) {
         std::cout << "Exceeded node limit\n";
@@ -132,7 +173,7 @@ bool Grid::solve_heuristic(int i, int j, std::vector<std::vector<bool>>& visited
 
     for (int v : {2, 3, 4, 13}) { 
         board[i][j].value = v;
-        std::cout << "[Heuristic] Trying value " << v << " at (" << i << "," << j << ")\n";
+        std::cout << "Trying value " << v << " at (" << i << "," << j << ")\n";
 
         std::vector<std::vector<bool>> temp_visited(height, std::vector<bool>(width, false));
         int comp_size = get_size(i, j, v, temp_visited, false);
@@ -155,6 +196,15 @@ bool Grid::solve_heuristic(int i, int j, std::vector<std::vector<bool>>& visited
     }
 
     visited[i][j] = false;
-    std::cout << "[Backtrack] Returning from (" << i << "," << j << ")\n";
+    std::cout << "Returning from (" << i << "," << j << ")\n";
     return false;
 }
+
+
+
+
+
+
+
+
+

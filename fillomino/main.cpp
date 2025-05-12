@@ -1,12 +1,17 @@
+/* -------------------------------------------------------------------------- */
+/*  File:       main.cpp                                                     */
+/*  Purpose:    Entry point for the Fillomino puzzle solver                  */
+/* -------------------------------------------------------------------------- */
+
 #include <iostream>
 #include <fstream>
 #include <chrono>
-#include "fillomino_solver.hpp"
+#include "logic.hpp"
 
 int main() {
     std::ifstream input("C:/cygwin64/home/Repositorii/fillomino/fillomino.in");
     if (!input) {
-        std::cerr << "Файл fillomino.in не знайдено!" << std::endl;
+        std::cerr << "File fillomino.in not found!" << std::endl;
         return 1;
     }
 
@@ -15,10 +20,10 @@ int main() {
         Grid game(n, m);
         game.read(input);
 
-        std::cout << "Тест " << test++ << ":\n";
+        std::cout << "Test " << test++ << ":\n";
         game.print(std::cout);
 
-        std::cout << "Запуск евристичного алгоритму (MRV + Degree)...\n";
+        std::cout << "Starting heuristic algorithm...\n";
 
         bool result = false;
         auto start = std::chrono::steady_clock::now();
@@ -30,7 +35,7 @@ int main() {
         auto [x, y] = game.select_next_cell(visited);
 
         if (x == -1 || y == -1) {
-            std::cout << "Немає доступної клітинки для старту!\n";
+            std::cout << "No available starting cell!\n";
             result = false;
         } else {
             result = game.solve_heuristic(x, y, visited, 0);
@@ -38,16 +43,14 @@ int main() {
 
         auto end = std::chrono::steady_clock::now();
         std::chrono::duration<double> elapsed = end - start;
-        std::cout << "Час виконання: " << elapsed.count() << " сек\n";
+        std::cout << "Execution time: " << elapsed.count() << " seconds\n";
 
         if (result) {
-            std::cout << "Розв'язок знайдено:\n";
+            std::cout << "Solution found:\n";
             game.print(std::cout);
         } else {
-            std::cout << "Розв'язку не існує.\n";
+            std::cout << "No solution exists.\n";
         }
-
-        std::cout << "-----------------------------\n";
     }
 
     return 0;
