@@ -12,14 +12,14 @@
 /* -------------------------------------------------------------------------- */
 class Node {
 public:
+    int x;           // Row index
+    int y;           // Column index
     int init_value;  // Original value from input
     int value;       // Current value
     bool visited;    // Visitation flag for traversal
-    int x;           // Row index
-    int y;           // Column index
 
     Node();                                  // Default constructor
     Node(int x, int y, int value);           // Parameterized constructor
 };
 
-#endif 
+#endif

@@ -171,7 +171,16 @@ bool Grid::solve_heuristic(int i, int j, std::vector<std::vector<bool>>& visited
         return res;
     }
 
-    for (int v : {2, 3, 4, 13}) { 
+    std::vector<int> values_to_try;
+    std::cout << "manual_input = " << manual_input << "\n";
+
+    if (manual_input) {
+        for (int v = 1; v <= 9; ++v) values_to_try.push_back(v);
+    } else {
+        values_to_try = {2, 3, 4, 13};
+    }
+
+    for (int v : values_to_try) {
         board[i][j].value = v;
         std::cout << "Trying value " << v << " at (" << i << "," << j << ")\n";
 

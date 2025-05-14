@@ -21,7 +21,7 @@ public:
 
     bool use_mrv = false;          // Use Minimum Remaining Values heuristic
     bool use_degree = false;       // Use Degree heuristic
-
+    bool manual_input = false; 
     std::pair<int, int> select_next_cell(const std::vector<std::vector<bool>>& visited);
     bool solve_heuristic(int i, int j, std::vector<std::vector<bool>>& visited, int visited_count);
 
