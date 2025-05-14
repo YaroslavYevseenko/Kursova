@@ -1,4 +1,4 @@
-# Fillomino Solver
+# Kursova
 
 This repository contains a C++ solver for Fillomino – a logic puzzle about dividing a grid into regions based on numeric clues.
 
